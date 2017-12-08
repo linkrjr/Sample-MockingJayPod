@@ -9,12 +9,23 @@
 import Foundation
 import Alamofire
 
+struct Message: Codable, Equatable {
+    var text: String
+    
+    func ==(lhs: Message, rhs: Message) -> Bool {
+        return lhs.text == rhs.text
+    }
+}
+
 class Service {
     
-    func get(callback: @escaping (String) -> Void, failure: @escaping (String) -> Void) {
-        Alamofire.request("http://domain/api/test").responseString { response in
-            if let value = response.result.value {
-                callback(value)
+    func get(callback: @escaping (Message) -> Void, failure: @escaping (String) -> Void) {
+        Alamofire.request("http://domain/api/test").responseJSON { response in
+            
+            if response.result.isSuccess, let value = response.data {
+                let decoder = JSONDecoder()
+                let message = try! decoder.decode(Message.self, from: value)
+                callback(message)
             } else {
                 failure("Error!!!")
             }
