@@ -7,30 +7,50 @@
 //
 
 import XCTest
+import Mockingjay
+import Quick
+import Nimble
+
 @testable import Sample_MockingJayPod
 
-class Sample_MockingJayPodTests: XCTestCase {
+class Sample_MockingJayPodTests: QuickSpec {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    override func spec() {
+        
+        describe("Testing MockingJay pod") {
+            let body = ["body":"Hello, MockingJay!!!"]
+            
+            beforeEach {
+//                stub(uri("/api/test"), builder: json("Hello, MockingJay!!!"))
+                
+                self.stub(http(.get, uri: "/api/test"), delay: nil, json(body))
+                
+//                MockingjayProtocol.addStub(matcher: http(.get, uri: "/api/test"), builder: json("Hello, MockingJay!!!"))
+            }
+            
+            context("Trying to stub a GET request") {
+                
+                it("should make a get request!!") {
+                    
+                    let fetchExpectingMessage = self.expectation(description: "Fetch Message")
+                    let service = Service()
+                    
+                    service.get(callback: { value in
+                        
+                        expect(value).to(equal(body["body"]))
+                        fetchExpectingMessage.fulfill()
+                        
+                    }, failure: { error in
+                        
+                    })
+                    
+                    self.waitForExpectations(timeout: 5, handler: nil)
+                }
+                
+            }
+            
         }
+        
     }
     
 }
